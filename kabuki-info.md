@@ -1,4 +1,4 @@
-###matherials:
+#summary
 * 1\. visual
     * a\. Region filter
     * b\. State filter
@@ -14,7 +14,8 @@
 * 5\. Vendors Filter
 * 6\. Sorting Procedure
 
-Как наиболее известный моему поколению пример кабуки может выступать сцена из мемуаров гейши: https://www.youtube.com/watch?v=63FxLM3AQt4
+#matherials:
 
-Вот это видео приводится как пример практически во всех культорологических статьях: https://www.youtube.com/watch?v=4JjLuh4Ns7s
+Как наиболее известный моему поколению пример кабуки может выступать сцена из мемуаров гейши: [тыц] (https://www.youtube.com/watch?v=63FxLM3AQt4)
 
+Вот это видео приводится как пример практически во всех культорологических статьях: [тыц] (https://www.youtube.com/watch?v=4JjLuh4Ns7s)
