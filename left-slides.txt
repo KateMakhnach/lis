@@ -1,0 +1,246 @@
+The impurity measure
+======================
+<div class="footer">Kate Makhnach, November 14, 2016</div>
+<div class="transbox"><small>Given an impurity function $\Phi$, define the <span style="font-weight:bold; color:orange;">impurity measure</span>, denoted as $i(t)$, of a node t as follows:
+$$i(t)= \Phi (p(1|t),p(2|t),...,p(K|t))$$
+where $p(j|t)$ is the estimated posterior probability of class $j$ given a point is in node $t$. This is called the impurity function or the impurity measure for node $t$.</br>
+
+Once we have $i(t)$, we define the <span style="font-weight:bold; color:orange;">goodness of split</span> $s$ for node $t$, denoted by $\Phi (s,t)$:
+$$\Phi (s,t) = \Delta i(s,t) = i(t)-p_R i(t_R)-p_L i(t_L)$$
+$\Delta i(s,t)$ is the difference between the impurity measure for node $t$ and the weighted sum of the impurity measures for the right child and the left child nodes. </br>The weights, $p_R$ and $p_L$ , are the proportions of the samples in node $t$ that go to the right node $t_R$  and the left node $t_L$ respectively.
+</small></div>
+
+
+The impurity measure
+==============================
+<div class="footer">Kate Makhnach, November 14, 2016</div>
+<div class="transbox">
+$$p_L = 10/13$$
+$$p_R = 3/13$$
+</br>The classification tree algorithm goes through all the candidate splits to select the best one with maximum $\Delta i(s,t)$.</br>
+$$I(t) = i(t) p(t)$$
+</div>
+***
+
+![alt text](split3.jpg)
+
+
+The aggregated impurity measure of tree 
+============================
+<div class="footer">Kate Makhnach, November 14, 2016</div>
+<div class="transbox"><small>$$I(T)= \sum_{t \epsilon \hat T} I(t)= \sum_{t \epsilon \hat T} i(t)p(t)$$
+This is a sum over all of the leaf nodes.</br>
+<span style="font-weight:bold; color:orange;">(not all of the nodes in the tree, just the leaf nodes!)</span></br>
+
+Note for any node t the following equations hold:
+$$p(t_L)+p(t_R)=p(t)$$
+$$p_L=p(t_L)/p(t)$$
+$$p_R=p(t_R)/p(t)$$
+$$p_L+p_R=1$$
+
+The region covered by the left child node, $t_L$, and the right child node, $t_R$, are disjoint and if combined, form the bigger region of their parent node $t$. The sum of the probabilities over two disjoined sets is equal to the probability of the union. $p_L$  then becomes the relative proportion of the left child node with respect to the parent node.</small></div>
+
+
+The aggregated impurity measure of tree 
+============================
+<div class="footer">Kate Makhnach, November 14, 2016</div>
+<div class="transbox"><small>The difference between the weighted impurity measure of the parent node and the two child nodes:
+$$\Delta I(s,t)=I(t)-I(t_L)-I(t_R)=$$
+$$p(t)i(t)-p(t_L)i(t_L)-p(t_R)i(t_R)=$$
+$$p(t)i(t)-p_Li(t_L)-p_Ri(t_R)=$$
+$$p(t) \Delta i(s,t)$$
+
+Finally getting to this mystery of the impurity function...</br>
+
+It should be understood that no matter what impurity function we use, the way you use it in a classification tree is the same. The only difference is what specific impurity function to plug in. Once you use this, what follows is the same.
+</small></div>
+
+
+Package "randomForest"
+==============================================
+class: small-code
+<div class="footer">Kate Makhnach, November 14, 2016</div>
+
+```{r}
+library(randomForest)
+fit.rf = randomForest(frmla, data=raw)
+print(fit.rf)
+importance(fit.rf)
+```
+
+
+Package "randomForest"
+==============================================
+class: small-code
+<div class="footer">Kate Makhnach, November 14, 2016</div>
+
+```{r}
+plot(fit.rf)
+plot( importance(fit.rf), lty=2, pch=16)
+lines(importance(fit.rf))
+imp = importance(fit.rf)
+impvar = rownames(imp)[order(imp[, 1], decreasing=TRUE)]
+op = par(mfrow=c(1, 3))
+for (i in seq_along(impvar)) {
+partialPlot(fit.rf, raw, impvar[i], xlab=impvar[i],
+main=paste("Partial Dependence on", impvar[i]),
+ylim=c(0, 1))
+}
+```
+
+
+21
+========================
+
+varSelRF
+
+This can be used for further variable selection procedure using random forests.  It implements both backward stepwise elimination as well as selection based on the importance spectrum.  This data uses randomly generated data so the correlation matrix can set so that the first variable is strongly correlated and the other variables are less so.
+
+
+22
+=====================
+
+```{r}
+##################
+## varSelRF package
+library(varSelRF)
+x = matrix(rnorm(25 * 30), ncol = 30)
+x[1:10, 1:2] = x[1:10, 1:2] + 2
+cl = factor(c(rep("A", 10), rep("B", 15)))
+rf.vs1 = varSelRF(x, cl, ntree = 200, ntreeIterat = 100,
+vars.drop.frac = 0.2)
+ 
+rf.vs1
+
+```
+
+
+23
+==========================
+
+```{r}
+
+plot(rf.vs1)
+ 
+## Example of importance function show that forcing x1 to be the most important
+## while create secondary variables that is related to x1.
+x1=rnorm(500)
+x2=rnorm(500,x1,1)
+y=runif(1,1,10)*x1+rnorm(500,0,.5)
+my.df=data.frame(y,x1,x2,x3=rnorm(500),x4=rnorm(500),x5=rnorm(500))
+rf1 = randomForest(y~., data=my.df, mtry=2, ntree=50, importance=TRUE)
+importance(rf1)
+cor(my.df)
+```
+
+
+24
+================================
+
+oblique.tree
+
+This package grows an oblique decision tree (a general form of the axis-parallel tree).  This example uses the crab dataset (morphological measurements on Leptograpsus crabs) available in R as a stock dataset to grow the oblique tree.
+
+
+25
+========================
+
+```{r, eval=F}
+###############
+## OBLIQUE.TREE
+library(oblique.tree)
+ 
+aug.crabs.data = data.frame( g=factor(rep(1:4,each=50)),
+predict(princomp(crabs[,4:8]))[,2:3])
+plot(aug.crabs.data[,-1],type="n")
+text( aug.crabs.data[,-1], col=as.numeric(aug.crabs.data[,1]), labels=as.numeric(aug.crabs.data[,1]))
+ob.tree = oblique.tree(formula = g~.,
+data = aug.crabs.data,
+oblique.splits = "only")
+plot(ob.tree);text(ob.tree)
+```
+
+
+26
+========================
+
+CORElearn
+
+This is a great package that contain many different machine learning algorithms and functions.  It include trees, forests, naive Bayes, locally weighted regression, among others.
+
+
+27
+=================================
+
+```{r}
+##################
+## CORElearn
+ 
+library(CORElearn)
+## Random Forests
+fit.rand.forest = CoreModel(frmla, data=raw, model="rf", selectionEstimator="MDL", minNodeWeightRF=5, rfNoTrees=100)
+plot(fit.rand.forest)
+ 
+## decision tree with naive Bayes in the leaves
+fit.dt = CoreModel(frmla, raw, model="tree", modelType=4)
+plot(fit.dt, raw)
+ 
+airquality.sub = subset(airquality, !is.na(airquality$Ozone))
+fit.rt = CoreModel(Ozone~., airquality.sub, model="regTree", modelTypeReg=1)
+summary(fit.rt)
+plot(fit.rt, airquality.sub, graphType="prototypes")
+ 
+pred = predict(fit.rt, airquality.sub)
+print(pred)
+plot(pred)
+```
+
+
+28
+=======================
+
+longRPart
+
+This provides an implementation for recursive partitioning for longitudinal data.  It uses the rules from rpart and the mixed effects models from nlme to grow regression trees. This can be a little resource intensive on some slower computers.
+
+
+29
+=====================
+
+```{r, eval=F}
+##################
+##longRPart
+library(longRPart)
+ 
+data(pbkphData)
+pbkphData$Time=as.factor(pbkphData$Time)
+long.tree = longRPart(pbkph~Time,~age+gender,~1|Subject,pbkphData,R=corExp(form=~time))
+lrpTreePlot(long.tree, use.n=TRE, place="bottomright")
+```
+
+
+30
+======================
+
+REEMtree
+
+This package is useful for longitudinal studies where random effects exist.  This example uses the pbkphData dataset available in the longRPart package.
+
+
+31
+=====================
+
+```{r}
+##################
+## REEMtree Random Effects for Longitudinal Data
+library(REEMtree)
+pbkphData.sub = subset(pbkphData, !is.na(pbkphData$pbkph))
+reem.tree = REEMtree(pbkph~Time, data=pbkphData.sub, random=~1|Subject)
+plot(reem.tree)
+ranef(reem.tree) #random effects
+ 
+reem.tree = REEMtree(pbkph~Time, data=pbkphData.sub, random=~1|Subject,
+correlation=corAR1())
+plot(reem.tree)
+```
+
